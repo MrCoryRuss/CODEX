@@ -1,3 +1,4 @@
+'use client';
 interface CategoryWithCount {
   id: string;
   label: string;

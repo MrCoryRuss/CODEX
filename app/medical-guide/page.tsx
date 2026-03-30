@@ -1,3 +1,4 @@
+'use client';
 import {
   MedicalGuideHero,
   TownGrid,
@@ -10,15 +11,6 @@ import {
   getMedicalCategories,
   getMedicalPDFs,
 } from "@/lib/medical-guide";
-
-// ISR: Revalidate every 6 hours (medical data changes slowly)
-export const revalidate = 21600;
-
-export const metadata = {
-  title: "Medical Guide | Posada Underground",
-  description:
-    "Emergency contacts, medical facilities, and health resources for Posada Concepción and surrounding communities.",
-};
 
 export default async function MedicalGuidePage() {
   // Fetch all medical guide data in parallel

@@ -1,3 +1,4 @@
+'use client';
 import EmergencyContactCard from "./emergency-contact-card";
 import type { EmergencyContact } from "@/types/medical";
 

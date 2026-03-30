@@ -1,10 +1,5 @@
+'use client';
 import { ChatShell } from "@/components/medical";
-
-export const metadata = {
-  title: "Ask the Medical Guide | Posada Underground",
-  description:
-    "Chat with the AI-powered Posada Medical Guide assistant. Get answers about medical facilities, emergency contacts, and health resources.",
-};
 
 export default function AskMedicalGuidePage() {
   return (

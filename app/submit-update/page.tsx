@@ -1,10 +1,5 @@
+'use client';
 import { SubmitUpdateShell } from "@/components/forms";
-
-export const metadata = {
-  title: "Submit an Update | Posada Underground",
-  description:
-    "Share community news, events, announcements, or corrections to medical information with Posada Underground.",
-};
 
 export default function SubmitUpdatePage() {
   return (

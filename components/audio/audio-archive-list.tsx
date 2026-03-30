@@ -1,3 +1,4 @@
+'use client';
 import type { AudioEpisode } from "@/types/audio-briefing";
 
 interface Props {

@@ -1,3 +1,4 @@
+'use client';
 export default function MedicalGuideHero() {
   return (
     <section className="hero" aria-label="Medical guide welcome">

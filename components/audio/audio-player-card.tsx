@@ -5,6 +5,7 @@ import type { AudioEpisode } from '@/types/audio-briefing';
 
 interface Props {
   episode: AudioEpisode;
+  featured?: boolean;
 }
 
 export default function AudioPlayerCard({ episode }: Props) {

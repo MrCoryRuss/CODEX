@@ -25,10 +25,10 @@ import type {
 
 // Import mock data (when real source is wired, these become fallbacks)
 import {
-  MOCK_MEDICAL_TOWNS,
-  MOCK_MEDICAL_CATEGORIES,
-  MOCK_MEDICAL_FACILITIES,
-  MOCK_MEDICAL_PDFS,
+  MOCK_TOWNS,
+  MOCK_CATEGORIES,
+  MOCK_FACILITIES,
+  MOCK_PDFS,
 } from "@/data/mock-medical-guide";
 
 import { MOCK_EMERGENCY_CONTACTS } from "@/data/mock-emergency-contacts";
@@ -63,11 +63,11 @@ export async function getMedicalTowns(): Promise<MedicalTown[]> {
     // return towns;
 
     _lastSource = "mock";
-    return MOCK_MEDICAL_TOWNS.sort((a, b) => a.distanceKm - b.distanceKm);
+    return MOCK_TOWNS.sort((a, b) => a.distanceKm - b.distanceKm);
   } catch (err) {
     console.error("[medical-guide] getMedicalTowns failed, using mock:", err);
     _lastSource = "mock";
-    return MOCK_MEDICAL_TOWNS;
+    return MOCK_TOWNS;
   }
 }
 
@@ -87,11 +87,11 @@ export async function getMedicalCategories(): Promise<MedicalCategory[]> {
     // return cats;
 
     _lastSource = "mock";
-    return MOCK_MEDICAL_CATEGORIES;
+    return MOCK_CATEGORIES;
   } catch (err) {
     console.error("[medical-guide] getMedicalCategories failed, using mock:", err);
     _lastSource = "mock";
-    return MOCK_MEDICAL_CATEGORIES;
+    return MOCK_CATEGORIES;
   }
 }
 
@@ -122,11 +122,11 @@ async function getAllFacilities(): Promise<MedicalFacility[]> {
     // return facilities;
 
     _lastSource = "mock";
-    return MOCK_MEDICAL_FACILITIES;
+    return MOCK_FACILITIES;
   } catch (err) {
     console.error("[medical-guide] getAllFacilities failed, using mock:", err);
     _lastSource = "mock";
-    return MOCK_MEDICAL_FACILITIES;
+    return MOCK_FACILITIES;
   }
 }
 
@@ -241,12 +241,12 @@ export async function getMedicalPDFs(): Promise<MedicalGuidePDF[]> {
     // _lastSource = "live";
     // return pdfs.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
 
-    return MOCK_MEDICAL_PDFS.sort(
+    return MOCK_PDFS.sort(
       (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
     );
   } catch (err) {
     console.error("[medical-guide] getMedicalPDFs failed, using mock:", err);
-    return MOCK_MEDICAL_PDFS;
+    return MOCK_PDFS;
   }
 }
 

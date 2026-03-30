@@ -7,6 +7,7 @@
  * Type of content section in an audio briefing script
  */
 export type AudioScriptSectionType =
+  | 'greeting'
   | 'weather'
   | 'marine'
   | 'events'

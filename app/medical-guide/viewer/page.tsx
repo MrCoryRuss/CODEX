@@ -1,9 +1,5 @@
+'use client';
 import Link from "next/link";
-
-export const metadata = {
-  title: "PDF Viewer | Posada Underground",
-  description: "Medical guide PDF viewer",
-};
 
 export default function PdfViewerPage({
   searchParams,

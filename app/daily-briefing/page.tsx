@@ -1,17 +1,9 @@
+'use client';
 import { AudioPlayerCard, AudioArchiveList } from "@/components/audio";
 import {
   getLatestBriefing,
   getBriefingArchive,
 } from "@/lib/audio-briefing";
-
-// ISR: Revalidate every 2 hours (new briefing generated daily at ~6 AM local)
-export const revalidate = 7200;
-
-export const metadata = {
-  title: "Daily Briefing | Posada Underground",
-  description:
-    "Listen to the daily audio briefing about weather, wind, water conditions, and community events in Posada Concepción.",
-};
 
 export default async function DailyBriefingPage() {
   // Fetch latest briefing and archive

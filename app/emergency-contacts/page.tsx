@@ -1,14 +1,6 @@
+'use client';
 import { EmergencyHero, EmergencyContactList } from "@/components/medical";
 import { getEmergencyContacts } from "@/lib/medical-guide";
-
-// ISR: Revalidate every 24 hours (emergency contacts rarely change)
-export const revalidate = 86400;
-
-export const metadata = {
-  title: "Emergency Contacts | Posada Underground",
-  description:
-    "Critical emergency contact numbers and services for Posada Concepción.",
-};
 
 export default async function EmergencyContactsPage() {
   const contacts = await getEmergencyContacts();
