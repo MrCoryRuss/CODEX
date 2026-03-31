@@ -1,6 +1,4 @@
-﻿/* Posada Underground - Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
+/* Posada Underground - Global Styles */
 :root {
   --color-bg: #f8f9fb; --color-surface: #ffffff; --color-surface-alt: #f1f3f7;
   --color-border: #e5e7ec; --color-border-light: #f0f1f4;
