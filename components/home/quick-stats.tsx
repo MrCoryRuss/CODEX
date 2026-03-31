@@ -15,23 +15,29 @@ function timeAgo(isoDate: string): string {
 export default function QuickStats({ conditions, isLive }: Props) {
   const c = conditions;
   const { icon: weatherIcon, label: weatherLabel } = resolveWeatherCode(c.weatherCode, c.isDay);
+
+  // Unit conversions
+  const tempF = Math.round(c.tempC * 9 / 5 + 32);
+  const feelsF = Math.round(c.feelsLikeC * 9 / 5 + 32);
+  const windMph = Math.round(c.windSpeedKts * 1.151);
+  const gustMph = Math.round(c.windGustsKts * 1.151);
   return (
     <section className="weather-hero" aria-label="Current weather conditions">
       <div className="hero-main">
         <div className="hero-temp-block">
           <span className="hero-icon" aria-hidden="true">{weatherIcon}</span>
           <div className="hero-temp-info">
-            <span className="hero-temp">{c.tempC}&deg;</span>
+            <span className="hero-temp">{c.tempC}&deg;<span className="hero-temp-alt">/ {tempF}&deg;F</span></span>
             <span className="hero-condition">{weatherLabel}</span>
-            <span className="hero-feels">Feels like {c.feelsLikeC}&deg;C</span>
+            <span className="hero-feels">Feels like {c.feelsLikeC}&deg;C / {feelsF}&deg;F</span>
           </div>
         </div>
         <Link href="/weather" className="hero-detail-link">Full forecast &rarr;</Link>
       </div>
       <div className="metrics-strip">
-        <div className="metric"><span className="metric-icon">&#x1F4A8;</span><div className="metric-data"><span className="metric-value">{c.windSpeedKts}<span className="metric-unit">kts</span></span><span className="metric-label">Wind {c.windDirectionLabel}</span></div></div>
+        <div className="metric"><span className="metric-icon">&#x1F4A8;</span><div className="metric-data"><span className="metric-value">{c.windSpeedKts}<span className="metric-unit">kts</span> <span className="metric-alt">{windMph} mph</span></span><span className="metric-label">Wind {c.windDirectionLabel}</span></div></div>
         <div className="metric-divider" />
-        <div className="metric"><span className="metric-icon">&#x1F32C;</span><div className="metric-data"><span className="metric-value">{c.windGustsKts}<span className="metric-unit">kts</span></span><span className="metric-label">Gusts</span></div></div>
+        <div className="metric"><span className="metric-icon">&#x1F32C;</span><div className="metric-data"><span className="metric-value">{c.windGustsKts}<span className="metric-unit">kts</span> <span className="metric-alt">{gustMph} mph</span></span><span className="metric-label">Gusts</span></div></div>
         <div className="metric-divider" />
         <div className="metric"><span className="metric-icon">&#x2600;&#xFE0F;</span><div className="metric-data"><span className="metric-value">{c.uvIndex}</span><span className="metric-label">UV {c.uvIndex >= 8 ? "Very High" : c.uvIndex >= 6 ? "High" : c.uvIndex >= 3 ? "Moderate" : "Low"}</span></div></div>
         <div className="metric-divider" />
@@ -74,3 +80,4 @@ export default function QuickStats({ conditions, isLive }: Props) {
     </section>
   );
 }
+
