@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Medical Guide types for the Posada Underground dashboard
  * Defines structures for medical facilities, contacts, and related resources
  */
@@ -11,7 +11,7 @@ export interface MedicalTown {
   id: string;
   /** Name of the town/settlement */
   name: string;
-  /** Distance from Posada Concepción in kilometers */
+  /** Distance from Posada ConcepciÃ³n in kilometers */
   distanceKm: number;
   /** Estimated drive time from Posada in minutes */
   driveTimeMin: number;
@@ -19,6 +19,8 @@ export interface MedicalTown {
   phone: string;
   /** Secondary contact phone number, if available */
   phoneAlt?: string;
+  /** WhatsApp phone number */
+  whatsappPhone?: string;
   /** Whatsapp number for messaging, if available */
   whatsappPhone?: string;
 }
@@ -55,6 +57,8 @@ export interface MedicalFacility {
   phone: string;
   /** Alternative phone number */
   phoneAlt?: string;
+  /** WhatsApp phone number */
+  whatsappPhone?: string;
   /** Whatsapp number for messaging, if available */
   whatsappPhone?: string;
   /** Operating hours in format "HH:MM-HH:MM" or "24h" */
@@ -92,6 +96,8 @@ export interface EmergencyContact {
   phone: string;
   /** Alternative phone number */
   phoneAlt?: string;
+  /** WhatsApp phone number */
+  whatsappPhone?: string;
   /** Whether contact is currently available/on-call */
   available: boolean;
   /** Hours when contact is typically available */
@@ -127,3 +133,4 @@ export interface MedicalGuidePDF {
   /** File size in bytes */
   fileSizeBytes?: number;
 }
+
