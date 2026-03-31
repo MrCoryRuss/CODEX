@@ -92,6 +92,8 @@ export interface EmergencyContact {
   phone: string;
   /** Alternative phone number */
   phoneAlt?: string;
+  /** WhatsApp phone number */
+  whatsappPhone?: string;
   /** Whether contact is currently available/on-call */
   available: boolean;
   /** Hours when contact is typically available */
@@ -127,5 +129,6 @@ export interface MedicalGuidePDF {
   /** File size in bytes */
   fileSizeBytes?: number;
 }
+
 
 
