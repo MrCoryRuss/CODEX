@@ -1,4 +1,4 @@
-/* =============================================================
+﻿/* =============================================================
    lib/medical-guide.ts
    Main medical guide data layer for facility and contact lookup.
 
@@ -33,7 +33,7 @@ import {
 
 import { MOCK_EMERGENCY_CONTACTS } from "@/data/mock-emergency-contacts";
 
-// ── Data source ─────────────────────────────────────────────
+// â”€â”€ Data source â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Currently all operations return mock data.
 // When a live API is available, getData() functions will fetch first,
 // falling back to mock on failure.
@@ -47,7 +47,7 @@ export function getMedicalGuideSource(): "live" | "mock" {
   return _lastSource;
 }
 
-// ── Public API: Towns ───────────────────────────────────────
+// â”€â”€ Public API: Towns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get all towns with medical services near Posada Concepcion.
@@ -71,7 +71,7 @@ export async function getMedicalTowns(): Promise<MedicalTown[]> {
   }
 }
 
-// ── Public API: Categories ──────────────────────────────────
+// â”€â”€ Public API: Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get all medical service categories (clinic, hospital, pharmacy, etc).
@@ -106,7 +106,7 @@ export async function getCategoryById(categoryId: string): Promise<MedicalCatego
   return all.find((c) => c.id === categoryId);
 }
 
-// ── Public API: Facilities ──────────────────────────────────
+// â”€â”€ Public API: Facilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get all medical facilities across all towns.
@@ -181,7 +181,7 @@ export async function searchFacilities(query: string): Promise<MedicalFacility[]
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// ── Public API: Emergency Contacts ──────────────────────────
+// â”€â”€ Public API: Emergency Contacts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get all emergency contacts, sorted by priority.
@@ -226,7 +226,7 @@ export async function getEmergencyContactById(
   return all.find((c) => c.id === contactId);
 }
 
-// ── Public API: Medical PDFs ────────────────────────────────
+// â”€â”€ Public API: Medical PDFs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Get all medical guide PDFs available for download.
@@ -274,7 +274,7 @@ export async function getMedicalPDFById(pdfId: string): Promise<MedicalGuidePDF 
   return all.find((p) => p.id === pdfId);
 }
 
-// ── Combined homepage data ──────────────────────────────────
+// â”€â”€ Combined homepage data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface MedicalGuideSnapshot {
   towns: MedicalTown[];
@@ -306,3 +306,5 @@ export async function getMedicalGuideSnapshot(): Promise<MedicalGuideSnapshot> {
     source: _lastSource,
   };
 }
+
+

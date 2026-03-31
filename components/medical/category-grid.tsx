@@ -1,5 +1,5 @@
-'use client';
-interface CategoryWithCount {
+﻿'use client';
+interface MedicalCategory {
   id: string;
   label: string;
   icon: string;
@@ -7,7 +7,7 @@ interface CategoryWithCount {
 }
 
 interface Props {
-  categories: CategoryWithCount[];
+  categories: MedicalCategory[];
 }
 
 export default function CategoryGrid({ categories }: Props) {
@@ -111,3 +111,4 @@ export default function CategoryGrid({ categories }: Props) {
     </section>
   );
 }
+
