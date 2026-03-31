@@ -19,8 +19,6 @@ export interface MedicalTown {
   phone: string;
   /** Secondary contact phone number, if available */
   phoneAlt?: string;
-  /** WhatsApp phone number */
-  whatsappPhone?: string;
   /** Whatsapp number for messaging, if available */
   whatsappPhone?: string;
 }
@@ -57,8 +55,6 @@ export interface MedicalFacility {
   phone: string;
   /** Alternative phone number */
   phoneAlt?: string;
-  /** WhatsApp phone number */
-  whatsappPhone?: string;
   /** Whatsapp number for messaging, if available */
   whatsappPhone?: string;
   /** Operating hours in format "HH:MM-HH:MM" or "24h" */
@@ -96,8 +92,6 @@ export interface EmergencyContact {
   phone: string;
   /** Alternative phone number */
   phoneAlt?: string;
-  /** WhatsApp phone number */
-  whatsappPhone?: string;
   /** Whether contact is currently available/on-call */
   available: boolean;
   /** Hours when contact is typically available */
@@ -133,4 +127,5 @@ export interface MedicalGuidePDF {
   /** File size in bytes */
   fileSizeBytes?: number;
 }
+
 
