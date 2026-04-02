@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
-import { WeatherMap } from "@/components/home";
+import { WindyAppMap, WindyForecast } from "@/components/home";
 import { fetchDailyForecast, fetchWindForecast, fetchCurrentConditions } from "@/lib/weather";
 import type { CurrentConditions, DailyForecast, WindForecast } from "@/types/weather";
 
@@ -28,73 +28,42 @@ export default function WeatherPage() {
         <h1>Weather & Wind</h1>
         <p className="hero-sub">Posada Concepcion, Bahia Concepcion</p>
       </div>
-
       {current && (
         <section className="section">
           <h2 className="section-title">Current Conditions</h2>
           <div className="conditions-grid">
-            <div className="cond-card">
-              <span className="cond-label">Temperature</span>
-              <span className="cond-value">{current.tempC}&deg;C</span>
-              <span className="cond-sub">Feels like {current.feelsLikeC}&deg;C</span>
-            </div>
-            <div className="cond-card">
-              <span className="cond-label">Wind</span>
-              <span className="cond-value">{current.windSpeedKts} kts</span>
-              <span className="cond-sub">{current.windDirectionLabel} &middot; Gusts {current.windGustsKts} kts</span>
-            </div>
-            <div className="cond-card">
-              <span className="cond-label">UV Index</span>
-              <span className="cond-value">{current.uvIndex}</span>
-              <span className="cond-sub">{current.uvIndex >= 8 ? "Very High" : current.uvIndex >= 6 ? "High" : current.uvIndex >= 3 ? "Moderate" : "Low"}</span>
-            </div>
-            <div className="cond-card">
-              <span className="cond-label">Humidity</span>
-              <span className="cond-value">{current.humidity}%</span>
-              <span className="cond-sub">Pressure {current.pressureHpa} hPa</span>
-            </div>
+            <div className="cond-card"><span className="cond-label">Temperature</span><span className="cond-value">{current.tempC}C</span><span className="cond-sub">Feels like {current.feelsLikeC}C</span></div>
+            <div className="cond-card"><span className="cond-label">Wind</span><span className="cond-value">{current.windSpeedKts} kts</span><span className="cond-sub">{current.windDirectionLabel} Gusts {current.windGustsKts} kts</span></div>
+            <div className="cond-card"><span className="cond-label">UV Index</span><span className="cond-value">{current.uvIndex}</span><span className="cond-sub">{current.uvIndex >= 8 ? "Very High" : current.uvIndex >= 6 ? "High" : current.uvIndex >= 3 ? "Moderate" : "Low"}</span></div>
+            <div className="cond-card"><span className="cond-label">Humidity</span><span className="cond-value">{current.humidity}%</span><span className="cond-sub">Pressure {current.pressureHpa} hPa</span></div>
           </div>
         </section>
       )}
-
+      <section className="section">
+        <h2 className="section-title">Windy Pro Forecast</h2>
+        <WindyForecast />
+      </section>
       <section className="section">
         <h2 className="section-title">Live Wind Map</h2>
-        <WeatherMap />
+        <WindyAppMap />
       </section>
-
       {forecast && (
         <section className="section">
           <h2 className="section-title">7-Day Forecast</h2>
           <div className="forecast-table">
             {forecast.days.map((d) => (
               <div key={d.date} className="fc-row">
-                <div className="fc-day-col">
-                  <span className="fc-day">{d.dayLabel}</span>
-                  <span className="fc-date">{d.dateLabel}</span>
-                </div>
+                <div className="fc-day-col"><span className="fc-day">{d.dayLabel}</span><span className="fc-date">{d.dateLabel}</span></div>
                 <span className="fc-icon">{d.weatherIcon}</span>
-                <div className="fc-desc-col">
-                  <span className="fc-desc">{d.weatherLabel}</span>
-                </div>
-                <div className="fc-temp-col">
-                  <span className="fc-high">{d.highC}&deg;</span>
-                  <span className="fc-low">{d.lowC}&deg;</span>
-                </div>
-                <div className="fc-detail-col">
-                  <span className="fc-wind">{d.windMaxKts}kt {d.windDominantDir}</span>
-                  {d.precipMm > 0 && <span className="fc-rain">{d.precipMm}mm</span>}
-                  <span className="fc-uv">UV {d.uvMax}</span>
-                </div>
-                <div className="fc-sun-col">
-                  <span className="fc-sunrise">{d.sunrise}</span>
-                  <span className="fc-sunset">{d.sunset}</span>
-                </div>
+                <div className="fc-desc-col"><span className="fc-desc">{d.weatherLabel}</span></div>
+                <div className="fc-temp-col"><span className="fc-high">{d.highC}</span><span className="fc-low">{d.lowC}</span></div>
+                <div className="fc-detail-col"><span className="fc-wind">Wind {d.windMaxKts}kt {d.windDominantDir}</span>{d.precipMm > 0 && <span className="fc-rain">Rain {d.precipMm}mm</span>}<span className="fc-uv">UV {d.uvMax}</span></div>
+                <div className="fc-sun-col"><span className="fc-sunrise">Rise {d.sunrise}</span><span className="fc-sunset">Set {d.sunset}</span></div>
               </div>
             ))}
           </div>
         </section>
       )}
-
       {wind && (
         <section className="section">
           <h2 className="section-title">48-Hour Wind Forecast</h2>
@@ -103,33 +72,21 @@ export default function WeatherPage() {
               {wind.hours.filter((_, i) => i % 3 === 0).map((h) => {
                 const d = new Date(h.time);
                 const hour = d.getHours();
-                const label = hour === 0
-                  ? d.toLocaleDateString("en-US", { weekday: "short" })
-                  : `${hour % 12 || 12}${hour < 12 ? "a" : "p"}`;
+                const label = hour === 0 ? d.toLocaleDateString("en-US", { weekday: "short" }) : `${hour % 12 || 12}${hour < 12 ? "a" : "p"}`;
                 const barHeight = Math.min(100, (h.speedKts / 30) * 100);
                 const gustHeight = Math.min(100, (h.gustKts / 30) * 100);
                 return (
                   <div key={h.time} className="wind-col">
-                    <div className="wind-bars">
-                      <div className="wind-gust-bar" style={{ height: `${gustHeight}%` }} title={`Gust: ${h.gustKts}kt`} />
-                      <div className="wind-speed-bar" style={{ height: `${barHeight}%` }} title={`Wind: ${h.speedKts}kt`} />
-                    </div>
-                    <span className="wind-val">{h.speedKts}</span>
-                    <span className="wind-dir">{h.directionLabel}</span>
-                    <span className="wind-time">{label}</span>
+                    <div className="wind-bars"><div className="wind-gust-bar" style={{ height: `${gustHeight}%` }} /><div className="wind-speed-bar" style={{ height: `${barHeight}%` }} /></div>
+                    <span className="wind-val">{h.speedKts}</span><span className="wind-dir">{h.directionLabel}</span><span className="wind-time">{label}</span>
                   </div>
                 );
               })}
             </div>
           </div>
-          <div className="wind-legend">
-            <span className="legend-item"><span className="legend-swatch legend-swatch--speed" /> Wind</span>
-            <span className="legend-item"><span className="legend-swatch legend-swatch--gust" /> Gusts</span>
-            <span className="legend-unit">knots</span>
-          </div>
+          <div className="wind-legend"><span className="legend-item"><span className="legend-swatch legend-swatch--speed" /> Wind</span><span className="legend-item"><span className="legend-swatch legend-swatch--gust" /> Gusts</span><span className="legend-unit">knots</span></div>
         </section>
       )}
-
       <style jsx>{`
         .weather-hero { background: linear-gradient(135deg, var(--color-sea) 0%, var(--color-sea-light) 100%); color: var(--color-white); padding: var(--sp-6) var(--sp-4); border-radius: var(--radius-lg); margin-bottom: var(--sp-6); }
         .weather-hero h1 { font-size: 32px; font-weight: 700; margin: 0 0 var(--sp-1) 0; color: var(--color-white); }
