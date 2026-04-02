@@ -9,7 +9,7 @@ const widgetHtml = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>*{margin:0;padding:0}body{overflow:hidden}</style></head>
 <body>
-<div data-windywidget="forecast" data-thememode="white" data-spotid="${SPOT_ID}" data-appid="${APP_ID}"></div>
+<div data-windywidget="forecast" data-thememode="white" data-spotid="${SPOT_ID}" data-appid="${APP_ID}" data-unittemp="f" data-unitwind="mph" data-unitswell="ft" data-unittide="ft" data-unitprecip="in"></div>
 <script async="true" data-cfasync="false" type="text/javascript" src="https://windy.app/widgets-code/forecast/windy_forecast_async.js?v184"><\/script>
 </body></html>`;
 
@@ -24,20 +24,8 @@ export default function WindyForecast() {
         <span className="card-badge">Windy Pro</span>
       </div>
       <div className="widget-container">
-        {!loaded && (
-          <div className="widget-loading">
-            <div className="widget-spinner" />
-            <p>Loading forecast...</p>
-          </div>
-        )}
-        <iframe
-          srcDoc={widgetHtml}
-          title="Windy.app forecast for Posada Concepcion"
-          className={`widget-iframe ${loaded ? "widget-iframe--visible" : ""}`}
-          onLoad={() => setLoaded(true)}
-          sandbox="allow-scripts allow-same-origin allow-popups"
-          loading="lazy"
-        />
+        {!loaded && (<div className="widget-loading"><div className="widget-spinner" /><p>Loading forecast...</p></div>)}
+        <iframe srcDoc={widgetHtml} title="Windy.app forecast" className={`widget-iframe ${loaded ? "widget-iframe--visible" : ""}`} onLoad={() => setLoaded(true)} allow="geolocation" loading="lazy" />
       </div>
       <style jsx>{`
         .windy-forecast { padding-bottom: var(--sp-3); }
