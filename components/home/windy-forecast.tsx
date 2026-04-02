@@ -3,19 +3,27 @@
 import { useState } from "react";
 
 const SPOT_ID = "8461035";
-const APP_ID = "0997810fb463c653f2379ae7aa2dcc3e";
+const APP_ID = "351262c50918c72dba6600c2da72c007";
+const LAT = "26.7542";
+const LNG = "-111.897";
 
 const widgetHtml = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>*{margin:0;padding:0}body{overflow:hidden}</style></head>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{overflow:hidden}</style></head>
 <body>
-<div data-windywidget="forecast" data-thememode="white" data-spotid="${SPOT_ID}" data-appid="${APP_ID}" data-unittemp="f" data-unitwind="mph" data-unitswell="ft" data-unittide="ft" data-unitprecip="in"></div>
-<script async="true" data-cfasync="false" type="text/javascript" src="https://windy.app/widgets-code/forecast/windy_forecast_async.js?v184"><\/script>
+<div
+  data-windywidget="forecast"
+  data-thememode="white"
+  data-spotid="${SPOT_ID}"
+  data-appid="${APP_ID}"
+  data-lat="${LAT}"
+  data-lng="${LNG}">
+</div>
+<script async="true" data-cfasync="false" type="text/javascript" src="https://windy.app/widgets-code/forecast/windy_forecast_async.js?v185"><\/script>
 </body></html>`;
 
 export default function WindyForecast() {
   const [loaded, setLoaded] = useState(false);
-
   return (
     <section className="card windy-forecast" aria-label="Windy.app forecast">
       <div className="card-header">
@@ -25,7 +33,7 @@ export default function WindyForecast() {
       </div>
       <div className="widget-container">
         {!loaded && (<div className="widget-loading"><div className="widget-spinner" /><p>Loading forecast...</p></div>)}
-        <iframe srcDoc={widgetHtml} title="Windy.app forecast" className={`widget-iframe ${loaded ? "widget-iframe--visible" : ""}`} onLoad={() => setLoaded(true)} allow="geolocation" loading="lazy" />
+        <iframe srcDoc={widgetHtml} title="Windy.app forecast for Posada Concepcion" className={`widget-iframe ${loaded ? "widget-iframe--visible" : ""}`} onLoad={() => setLoaded(true)} allow="geolocation" loading="lazy" />
       </div>
       <style jsx>{`
         .windy-forecast { padding-bottom: var(--sp-3); }
