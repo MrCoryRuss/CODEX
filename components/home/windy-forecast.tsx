@@ -3,9 +3,7 @@
 import { useState } from "react";
 
 const SPOT_ID = "8461035";
-const APP_ID = "351262c50918c72dba6600c2da72c007";
-const LAT = "26.7542";
-const LNG = "-111.897";
+const APP_ID = "widgets_afdd83b96d";
 
 const widgetHtml = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -14,14 +12,9 @@ const widgetHtml = `<!DOCTYPE html>
 <div
   data-windywidget="forecast"
   data-thememode="white"
+  data-tempunit="F"
   data-spotid="${SPOT_ID}"
-  data-appid="${APP_ID}"
-  data-lat="${LAT}"
-  data-lng="${LNG}"
-  data-unitwind="mph"
-  data-unittemp="f"
-  data-unittide="ft"
-  data-unitwave="ft">
+  data-appid="${APP_ID}">
 </div>
 <script async="true" data-cfasync="false" type="text/javascript" src="https://windy.app/widgets-code/forecast/windy_forecast_async.js?v185"><\/script>
 </body></html>`;
