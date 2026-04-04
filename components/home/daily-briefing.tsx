@@ -145,14 +145,15 @@ export default function DailyBriefingCard() {
         </>
       ) : (
         <div className="empty-state">
-          <p className="empty-text">No briefing generated yet for today.</p>
+          <p className="empty-tagline">Your daily weather, tides &amp; fishing outlook</p>
           <button className="generate-btn" onClick={generate} disabled={loading}>
             {loading ? (
-              <><span className="spinner" /> Generating...</>
+              <><span className="spinner" /> Generating your briefing...</>
             ) : (
-              "🎙️ Generate Today\'s Briefing"
+              <>▶ &nbsp;Play Today&apos;s Briefing</>
             )}
           </button>
+          <p className="empty-hint">Live weather · Tides · Fishing · 3-day forecast</p>
           {error && <p className="error-text">{error}</p>}
         </div>
       )}
@@ -281,31 +282,43 @@ export default function DailyBriefingCard() {
           flex-direction: column;
           align-items: center;
           gap: var(--sp-3);
-          padding: var(--sp-5) 0 var(--sp-3);
+          padding: var(--sp-4) 0 var(--sp-2);
           text-align: center;
         }
-        .empty-text {
-          font-size: 14px;
-          color: rgba(255,255,255,0.65);
+        .empty-tagline {
+          font-size: 15px;
+          font-weight: 500;
+          color: rgba(255,255,255,0.85);
+          margin: 0;
+        }
+        .empty-hint {
+          font-size: 12px;
+          color: rgba(255,255,255,0.45);
+          letter-spacing: 0.03em;
+          margin: 0;
         }
         .generate-btn {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: var(--sp-2);
-          padding: 12px 24px;
-          border-radius: var(--radius-md);
-          border: 2px solid rgba(255,255,255,0.4);
-          background: rgba(255,255,255,0.15);
-          color: #fff;
+          padding: 16px 36px;
+          border-radius: 50px;
+          border: none;
+          background: #fff;
+          color: var(--color-sea);
           font-family: var(--font-body);
-          font-size: 15px;
-          font-weight: 600;
+          font-size: 17px;
+          font-weight: 700;
           cursor: pointer;
-          transition: background 0.15s;
+          transition: transform 0.1s, box-shadow 0.1s;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
           -webkit-tap-highlight-color: transparent;
+          min-width: 220px;
         }
-        .generate-btn:hover { background: rgba(255,255,255,0.25); }
-        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .generate-btn:hover { transform: scale(1.03); box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
+        .generate-btn:active { transform: scale(0.98); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .spinner {
           width: 16px;
           height: 16px;

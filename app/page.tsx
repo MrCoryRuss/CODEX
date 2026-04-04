@@ -26,11 +26,16 @@ export default async function Home() {
     <div className="page-container">
       <h1 className="sr-only">Posada Underground — Daily Dashboard</h1>
 
-      {/* 1. Weather hero */}
-      <WeatherHero conditions={weather.current} isLive={weather.isLive} />
+      {/* 1. Daily briefing — top of page */}
+      <div className="home-widget">
+        <DailyBriefingCard />
+      </div>
 
       {/* 2. Quick action links */}
       <QuickLinks />
+
+      {/* 3. Weather hero */}
+      <WeatherHero conditions={weather.current} isLive={weather.isLive} />
 
       {/* 3. Marine + announcements */}
       <div className="home-two-col">
@@ -48,12 +53,7 @@ export default async function Home() {
         <WindyAppMap />
       </div>
 
-      {/* 6. Daily briefing */}
-      <div className="home-widget">
-        <DailyBriefingCard />
-      </div>
-
-      {/* 7. Events + Sports */}
+      {/* 6. Events + Sports */}
       <div className="home-two-col">
         <EventsCard items={MOCK_EVENTS} />
         <SportsCard items={MOCK_SPORTS} />
