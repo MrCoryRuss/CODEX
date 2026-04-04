@@ -96,7 +96,7 @@ function formatEvents(events: CalendarEvent[]): string {
       lines.push(`  ${ev.title}${time}${loc}.`);
     }
   }
-  lines.push("Check the Posada Underground events page for full details.");
+  lines.push("Check the po-SAH-da Underground events page for full details.");
   return lines.join(" ");
 }
 
@@ -156,13 +156,13 @@ export function generatePodcastScript(
 
   // Intro — Robin Williams energy
   const intros = [
-    `GOOOOD MORNING POSADAMITES! It's ${day}, ${month} ${date}th and THIS — IS — YOUR — MORNING BRIEFING! ` +
+    `GOOOOD MORNING po-SAH-da-mites! It's ${day}, ${month} ${date}th and THIS — IS — YOUR — MORNING BRIEFING! ` +
     `The sun is up, the Sea of Cortez is out there waiting, and YOU are about to get the most important information of your day. Let's GO!`,
 
-    `GOOOOOD MORNING POSADA! Rise and shine, Bahia Concepcion — it is ${day} ${month} ${date}th, ` +
+    `GOOOOOD MORNING POSADA! Rise and shine, BAH-ee-ah Con-sep-SYON — it is ${day} ${month} ${date}th, ` +
     `the birds are going absolutely NUTS outside, and your daily underground briefing is ON THE AIR. Hold on to your hats!`,
 
-    `HEY HEY HEY — good morning Posadamites! ${day}, ${month} ${date}th, ` +
+    `HEY HEY HEY — good morning po-SAH-da-mites! ${day}, ${month} ${date}th, ` +
     `the bay is RIGHT THERE, the coffee is hopefully in your hand, and we have got a FULL report coming at you. Don't touch that dial!`,
   ];
   parts.push(intros[now.getDate() % intros.length]);
@@ -173,7 +173,7 @@ export function generatePodcastScript(
     : "";
 
   parts.push(
-    `Right now on Bahia Concepcion, we've got ${windWord} out of the ${c.windDirectionLabel} ` +
+    `Right now on BAH-ee-ah Con-sep-SYON, we've got ${windWord} out of the ${c.windDirectionLabel} ` +
     `at ${windMph} miles per hour${gustNote}. ${tempLine}${gustAdvisory}`
   );
 
@@ -243,17 +243,17 @@ export function generatePodcastScript(
 
   // Sign-off
   const signoffs = [
-    `And THAT is your Posada Underground morning briefing for ${day}! ` +
+    `And THAT is your po-SAH-da Underground morning briefing for ${day}! ` +
     `You are now fully armed with knowledge. Go forth. Be salty. Catch fish. ` +
-    `And remember — there is nowhere else on Earth you could be right now. HASTA LUEGO, POSADAMITES!`,
+    `And remember — there is nowhere else on Earth you could be right now. HASTA LUEGO, po-SAH-da-mites!`,
 
-    `That is a WRAP on your ${day} briefing from Posada Underground! ` +
+    `That is a WRAP on your ${day} briefing from po-SAH-da Underground! ` +
     `Stay safe out there, tip your captains, wear your sunscreen — SPF is not optional at this latitude — ` +
     `and we will see you right back here tomorrow morning. Chao for now!`,
 
-    `And that's the briefing, baby! ${day} on Bahia Concepcion — ` +
+    `And that's the briefing, baby! ${day} on BAH-ee-ah Con-sep-SYON — ` +
     `could be worse, could NOT be better. Get out there and enjoy every single second of it. ` +
-    `Posada Underground, signing off. HASTA LUEGO!`,
+    `po-SAH-da Underground, signing off. HASTA LUEGO!`,
   ];
   parts.push(signoffs[now.getDate() % signoffs.length]);
 
