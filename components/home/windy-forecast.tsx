@@ -17,7 +17,11 @@ const widgetHtml = `<!DOCTYPE html>
   data-spotid="${SPOT_ID}"
   data-appid="${APP_ID}"
   data-lat="${LAT}"
-  data-lng="${LNG}">
+  data-lng="${LNG}"
+  data-unitwind="mph"
+  data-unittemp="f"
+  data-unittide="ft"
+  data-unitwave="ft">
 </div>
 <script async="true" data-cfasync="false" type="text/javascript" src="https://windy.app/widgets-code/forecast/windy_forecast_async.js?v185"><\/script>
 </body></html>`;
