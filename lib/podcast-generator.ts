@@ -154,11 +154,18 @@ export function generatePodcastScript(
   // Build the script ───────────────────────────────────────────────────────────
   const parts: string[] = [];
 
-  // Intro
-  parts.push(
-    `Good morning Posada! It's ${day}, ${month} ${date}th. ` +
-    `Welcome to your Posada Underground daily briefing — everything you need to know before you head out.`
-  );
+  // Intro — Robin Williams energy
+  const intros = [
+    `GOOOOD MORNING POSADAMITES! It's ${day}, ${month} ${date}th and THIS — IS — YOUR — MORNING BRIEFING! ` +
+    `The sun is up, the Sea of Cortez is out there waiting, and YOU are about to get the most important information of your day. Let's GO!`,
+
+    `GOOOOOD MORNING POSADA! Rise and shine, Bahia Concepcion — it is ${day} ${month} ${date}th, ` +
+    `the birds are going absolutely NUTS outside, and your daily underground briefing is ON THE AIR. Hold on to your hats!`,
+
+    `HEY HEY HEY — good morning Posadamites! ${day}, ${month} ${date}th, ` +
+    `the bay is RIGHT THERE, the coffee is hopefully in your hand, and we have got a FULL report coming at you. Don't touch that dial!`,
+  ];
+  parts.push(intros[now.getDate() % intros.length]);
 
   // Current conditions + today's high/low
   const tempLine = highF && lowF
@@ -181,11 +188,13 @@ export function generatePodcastScript(
   // Sea conditions + fishing — SELL IT if glass
   if (seaInfo.glass) {
     parts.push(
-      `Now here's the headline for today: the bay is GLASS. ` +
-      `We're talking ${toFt(mc.waveHeightM)}-foot waves — basically nothing — ` +
-      `with ${toFt(mc.swellHeightM)}-foot swells rolling in on a ${mc.swellPeriodS}-second period from the ${mc.swellDirectionLabel}. ` +
-      `If you've been waiting for a perfect day on the water, today is it. ` +
-      `Conditions don't get better than this on the Sea of Cortez.`
+      `NOW HERE IS YOUR HEADLINE. Are you ready? THE BAY — IS — GLASS. ` +
+      `I said GLASS, people. We are talking ${toFt(mc.waveHeightM)}-foot waves. ` +
+      `That is basically a swimming pool out there. ` +
+      `${toFt(mc.swellHeightM)}-foot swells rolling in nice and lazy on a ${mc.swellPeriodS}-second period from the ${mc.swellDirectionLabel}. ` +
+      `If you are sitting inside reading this right now, I need you to put down whatever you are doing, ` +
+      `grab your gear, and GET ON THE WATER. ` +
+      `Days like this on the Sea of Cortez are RARE. This is it. This is the one. GO!`
     );
   } else {
     parts.push(
@@ -233,10 +242,20 @@ export function generatePodcastScript(
   }
 
   // Sign-off
-  parts.push(
-    `That's your Posada Underground morning briefing for ${day}. ` +
-    `Stay safe, stay salty, and we'll see you on the water. Hasta luego!`
-  );
+  const signoffs = [
+    `And THAT is your Posada Underground morning briefing for ${day}! ` +
+    `You are now fully armed with knowledge. Go forth. Be salty. Catch fish. ` +
+    `And remember — there is nowhere else on Earth you could be right now. HASTA LUEGO, POSADAMITES!`,
+
+    `That is a WRAP on your ${day} briefing from Posada Underground! ` +
+    `Stay safe out there, tip your captains, wear your sunscreen — SPF is not optional at this latitude — ` +
+    `and we will see you right back here tomorrow morning. Chao for now!`,
+
+    `And that's the briefing, baby! ${day} on Bahia Concepcion — ` +
+    `could be worse, could NOT be better. Get out there and enjoy every single second of it. ` +
+    `Posada Underground, signing off. HASTA LUEGO!`,
+  ];
+  parts.push(signoffs[now.getDate() % signoffs.length]);
 
   return parts.join("\n\n");
 }
