@@ -1,24 +1,18 @@
 import {
-  QuickStats,
   WindyAppMap,
   WindyForecast,
-  ForecastCard,
-  MarineCard,
-  SportsCard,
-  EventsCard,
   AnnouncementsCard,
-  AudioBriefingCard,
+  SportsCard,
 } from "@/components/home";
 
-import {
-  MOCK_SPORTS,
-  MOCK_EVENTS,
-  MOCK_ANNOUNCEMENTS,
-  MOCK_AUDIO,
-} from "@/components/home/mock-data";
-
+import { MOCK_SPORTS, MOCK_ANNOUNCEMENTS, MOCK_EVENTS } from "@/components/home/mock-data";
 import { fetchHomepageWeather } from "@/lib/weather";
 import { fetchHomepageMarine } from "@/lib/marine";
+import WeatherHero from "@/components/home/weather-hero";
+import CompactMarine from "@/components/home/compact-marine";
+import EventsCard from "@/components/home/community-events";
+import DailyBriefingCard from "@/components/home/daily-briefing";
+import QuickLinks from "@/components/home/quick-links";
 
 export const revalidate = 1800;
 
@@ -30,17 +24,39 @@ export default async function Home() {
 
   return (
     <div className="page-container">
-      <h1 className="sr-only">Posada Underground &ndash; Daily Dashboard</h1>
-      <QuickStats conditions={weather.current} isLive={weather.isLive} />
-      <div className="dashboard-grid">
-        <ForecastCard days={weather.forecast.days} fetchedAt={weather.forecast.fetchedAt} isLive={weather.isLive} />
-        <MarineCard snapshot={marine.snapshot} isLive={marine.isLive} />
-        <div className="grid-span-full"><WindyForecast /></div>
-        <div className="grid-span-full"><WindyAppMap /></div>
+      <h1 className="sr-only">Posada Underground — Daily Dashboard</h1>
+
+      {/* 1. Weather hero */}
+      <WeatherHero conditions={weather.current} isLive={weather.isLive} />
+
+      {/* 2. Quick action links */}
+      <QuickLinks />
+
+      {/* 3. Marine + announcements */}
+      <div className="home-two-col">
+        <CompactMarine snapshot={marine.snapshot} isLive={marine.isLive} />
         <AnnouncementsCard items={MOCK_ANNOUNCEMENTS} />
-        <AudioBriefingCard briefing={MOCK_AUDIO} />
-        <SportsCard items={MOCK_SPORTS} />
+      </div>
+
+      {/* 4. Windy forecast */}
+      <div className="home-widget">
+        <WindyForecast />
+      </div>
+
+      {/* 5. Windy map */}
+      <div className="home-widget">
+        <WindyAppMap />
+      </div>
+
+      {/* 6. Daily briefing */}
+      <div className="home-widget">
+        <DailyBriefingCard />
+      </div>
+
+      {/* 7. Events + Sports */}
+      <div className="home-two-col">
         <EventsCard items={MOCK_EVENTS} />
+        <SportsCard items={MOCK_SPORTS} />
       </div>
     </div>
   );

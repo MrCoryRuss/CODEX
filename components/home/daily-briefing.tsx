@@ -1,180 +1,324 @@
 "use client";
 
-import { useState } from "react";
-import type { AudioBriefing } from "./mock-data";
+import { useState, useRef, useEffect } from "react";
 
-interface Props {
-  briefing: AudioBriefing;
+interface BriefingState {
+  audioUrl: string;
+  script: string;
+  generatedAt: string;
+  isMock: boolean;
 }
 
-function formatDuration(sec: number): string {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
+const STORAGE_KEY = "posada_briefing_v1";
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
 }
 
-export default function AudioBriefingCard({ briefing }: Props) {
-  const [expanded, setExpanded] = useState(false);
+function formatDate() {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long", month: "long", day: "numeric",
+  });
+}
+
+export default function DailyBriefingCard() {
+  const [briefing, setBriefing] = useState<BriefingState | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [scriptOpen, setScriptOpen] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.date === todayKey()) {
+          setBriefing(parsed.briefing);
+        }
+      }
+    } catch {}
+  }, []);
+
+  async function generate() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/generate-podcast", { method: "POST" });
+      if (!res.ok) throw new Error("Generation failed");
+      const data: BriefingState = await res.json();
+      setBriefing(data);
+      setPlaying(false);
+      setProgress(0);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayKey(), briefing: data }));
+    } catch {
+      setError("Could not generate briefing. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function togglePlay() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) { audio.pause(); setPlaying(false); }
+    else { audio.play(); setPlaying(true); }
+  }
+
+  function formatTime(s: number) {
+    if (!s || isNaN(s)) return "0:00";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  function seek(e: React.MouseEvent<HTMLDivElement>) {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = pct * duration;
+  }
 
   return (
-    <section className="card audio-card" aria-label="Daily audio briefing">
+    <section className="card briefing-card" aria-label="Daily audio briefing">
       <div className="card-header">
-        <span className="card-icon audio-icon" aria-hidden="true">🎙</span>
-        <span className="card-title audio-title">Daily Briefing</span>
-      </div>
-
-      <p className="audio-date">{briefing.dateFormatted}</p>
-
-      <div className="audio-player">
-        <button className="audio-play" aria-label="Play daily briefing">
-          ▶
-        </button>
-        <div className="audio-track">
-          <div className="audio-bar">
-            <div className="audio-progress" />
-          </div>
-          <div className="audio-times">
-            <span>0:00</span>
-            <span>{formatDuration(briefing.durationSec)}</span>
-          </div>
+        <span className="card-icon briefing-icon" aria-hidden="true">🎙️</span>
+        <div className="briefing-title-block">
+          <span className="card-title">Morning Briefing</span>
+          <span className="briefing-date">{formatDate()}</span>
         </div>
+        {briefing?.isMock && <span className="mock-badge">Demo</span>}
       </div>
 
-      {/* Expandable transcript / summary */}
-      <button
-        className="audio-expand"
-        onClick={() => setExpanded(!expanded)}
-        aria-expanded={expanded}
-      >
-        {expanded ? "Hide summary ▲" : "Read summary ▼"}
-      </button>
+      {briefing ? (
+        <>
+          {/* Audio element */}
+          <audio
+            ref={audioRef}
+            src={briefing.audioUrl}
+            onTimeUpdate={() => {
+              const a = audioRef.current;
+              if (a) setProgress(a.currentTime);
+            }}
+            onLoadedMetadata={() => {
+              const a = audioRef.current;
+              if (a) setDuration(a.duration);
+            }}
+            onEnded={() => setPlaying(false)}
+          />
 
-      {expanded && (
-        <p className="audio-summary">{briefing.summary}</p>
+          {/* Player */}
+          <div className="player">
+            <button className="play-btn" onClick={togglePlay} aria-label={playing ? "Pause" : "Play"}>
+              {playing ? "⏸" : "▶️"}
+            </button>
+            <div className="track">
+              <div className="progress-bar" onClick={seek} role="slider" aria-label="Seek">
+                <div
+                  className="progress-fill"
+                  style={{ width: duration ? `${(progress / duration) * 100}%` : "0%" }}
+                />
+              </div>
+              <div className="times">
+                <span>{formatTime(progress)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Script toggle */}
+          <button className="script-toggle" onClick={() => setScriptOpen(o => !o)}>
+            {scriptOpen ? "Hide script ▲" : "Read script ▼"}
+          </button>
+          {scriptOpen && (
+            <pre className="script-text">{briefing.script}</pre>
+          )}
+
+          <button className="regen-btn" onClick={generate} disabled={loading}>
+            {loading ? "Generating..." : "↻ Regenerate"}
+          </button>
+        </>
+      ) : (
+        <div className="empty-state">
+          <p className="empty-text">No briefing generated yet for today.</p>
+          <button className="generate-btn" onClick={generate} disabled={loading}>
+            {loading ? (
+              <><span className="spinner" /> Generating...</>
+            ) : (
+              "🎙️ Generate Today\'s Briefing"
+            )}
+          </button>
+          {error && <p className="error-text">{error}</p>}
+        </div>
       )}
 
-      <div className="audio-footer">
-        <a href="/briefing" className="audio-archive-link">Past briefings →</a>
-      </div>
-
       <style jsx>{`
-        .audio-card {
-          background: var(--color-sea);
-          color: var(--color-white);
+        .briefing-card {
+          background: linear-gradient(135deg, var(--color-sea) 0%, #0c4a6e 100%);
+          color: #fff;
+          border: none;
         }
-
-        .audio-icon {
-          background: rgba(255, 255, 255, 0.15) !important;
-          color: var(--color-white) !important;
+        .briefing-icon {
+          background: rgba(255,255,255,0.15) !important;
+          color: #fff !important;
         }
-
-        .audio-title {
-          color: rgba(255, 255, 255, 0.75) !important;
+        .briefing-title-block {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
-
-        .audio-date {
+        .card-title {
+          color: rgba(255,255,255,0.75) !important;
+        }
+        .briefing-date {
           font-size: 15px;
-          font-weight: 500;
-          margin-bottom: var(--sp-3);
+          font-weight: 600;
+          color: #fff;
+          line-height: 1.2;
         }
-
-        .audio-player {
+        .mock-badge {
+          margin-left: auto;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          padding: 2px 8px;
+          border-radius: 20px;
+          background: rgba(255,255,255,0.15);
+          color: rgba(255,255,255,0.7);
+        }
+        /* Player */
+        .player {
           display: flex;
           align-items: center;
           gap: var(--sp-3);
+          margin: var(--sp-4) 0 var(--sp-3);
         }
-
-        .audio-play {
-          width: 48px;
-          height: 48px;
+        .play-btn {
+          width: 52px;
+          height: 52px;
           border-radius: 50%;
-          border: 2px solid rgba(255, 255, 255, 0.4);
-          background: rgba(255, 255, 255, 0.1);
-          color: var(--color-white);
-          font-size: 16px;
+          border: 2px solid rgba(255,255,255,0.4);
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-size: 20px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          transition: background 0.12s ease;
+          transition: background 0.15s;
+          -webkit-tap-highlight-color: transparent;
         }
-
-        .audio-play:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        .audio-track {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .audio-bar {
-          height: 4px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 2px;
+        .play-btn:hover { background: rgba(255,255,255,0.25); }
+        .track { flex: 1; min-width: 0; }
+        .progress-bar {
+          height: 6px;
+          background: rgba(255,255,255,0.2);
+          border-radius: 3px;
+          cursor: pointer;
           overflow: hidden;
         }
-
-        .audio-progress {
-          width: 0%;
+        .progress-fill {
           height: 100%;
-          background: var(--color-white);
-          border-radius: 2px;
-          transition: width 0.3s ease;
+          background: #fff;
+          border-radius: 3px;
+          transition: width 0.1s linear;
         }
-
-        .audio-times {
+        .times {
           display: flex;
           justify-content: space-between;
           font-family: var(--font-data);
           font-size: 12px;
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(255,255,255,0.5);
           margin-top: 4px;
         }
-
-        .audio-expand {
+        /* Script */
+        .script-toggle {
           display: inline-block;
-          margin-top: var(--sp-3);
-          padding: 0;
           background: none;
           border: none;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(255,255,255,0.65);
           font-family: var(--font-body);
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
           cursor: pointer;
-          transition: color 0.1s ease;
+          padding: 0;
+          margin-bottom: var(--sp-2);
         }
-
-        .audio-expand:hover {
-          color: var(--color-white);
-        }
-
-        .audio-summary {
-          margin-top: var(--sp-2);
-          font-size: 15px;
-          line-height: 1.5;
-          color: rgba(255, 255, 255, 0.85);
-          padding: var(--sp-3);
-          background: rgba(255, 255, 255, 0.08);
-          border-radius: var(--radius-sm);
-        }
-
-        .audio-footer {
-          margin-top: var(--sp-3);
-        }
-
-        .audio-archive-link {
+        .script-toggle:hover { color: #fff; }
+        .script-text {
+          font-family: var(--font-body);
           font-size: 14px;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.6);
-          text-decoration: none;
+          line-height: 1.7;
+          color: rgba(255,255,255,0.85);
+          background: rgba(255,255,255,0.08);
+          border-radius: var(--radius-sm);
+          padding: var(--sp-3);
+          white-space: pre-wrap;
+          margin-bottom: var(--sp-3);
         }
-
-        .audio-archive-link:hover {
-          color: var(--color-white);
-          text-decoration: underline;
+        .regen-btn {
+          font-size: 13px;
+          font-weight: 500;
+          color: rgba(255,255,255,0.6);
+          background: none;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: var(--radius-sm);
+          padding: 6px 14px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .regen-btn:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+        /* Empty state */
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--sp-3);
+          padding: var(--sp-5) 0 var(--sp-3);
+          text-align: center;
+        }
+        .empty-text {
+          font-size: 14px;
+          color: rgba(255,255,255,0.65);
+        }
+        .generate-btn {
+          display: flex;
+          align-items: center;
+          gap: var(--sp-2);
+          padding: 12px 24px;
+          border-radius: var(--radius-md);
+          border: 2px solid rgba(255,255,255,0.4);
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          font-family: var(--font-body);
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .generate-btn:hover { background: rgba(255,255,255,0.25); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: #fff;
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+          display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-text {
+          font-size: 13px;
+          color: rgba(255,180,180,1);
         }
       `}</style>
     </section>

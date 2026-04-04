@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: "&#x2600;&#xFE0F;" },
-  { href: "/weather", label: "Weather", icon: "&#x1F324;" },
-  { href: "/water", label: "Water", icon: "&#x1F30A;" },
-  { href: "/events", label: "Events", icon: "&#x1F4C5;" },
-  { href: "/medical", label: "Medical", icon: "&#x1F3E5;" },
+  { href: "/",              label: "Home",     icon: "&#x2600;&#xFE0F;" },
+  { href: "/water",         label: "Water",    icon: "&#x1F30A;" },
+  { href: "/events",        label: "Events",   icon: "&#x1F4C5;" },
+  { href: "/daily-briefing",label: "Briefing", icon: "&#x1F399;" },
+  { href: "/medical",       label: "Medical",  icon: "&#x1F3E5;" },
 ];
 export default function Nav() {
   const pathname = usePathname();
