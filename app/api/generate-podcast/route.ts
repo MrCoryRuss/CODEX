@@ -2,24 +2,42 @@ import { NextResponse } from "next/server";
 import { fetchHomepageWeather } from "@/lib/weather";
 import { fetchHomepageMarine } from "@/lib/marine";
 import { generatePodcastScript } from "@/lib/podcast-generator";
+import { fetchGoogleCalendarEvents } from "@/lib/google-calendar";
+import type { CalendarEvent } from "@/types/calendar";
 
-// VM-hosted TTS server (Gemini TTS via gsk)
+// VM-hosted TTS server (Gemini TTS via gsk — free, high quality)
 const TTS_ENDPOINT = process.env.POSADA_TTS_ENDPOINT || "https://vwpxquth.gensparkclaw.com/tts/generate";
 const TTS_SECRET   = process.env.POSADA_TTS_SECRET   || "";
 
 // Mock audio fallback
 const MOCK_AUDIO_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
+function dateStr(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
 export async function POST() {
   try {
-    const [weather, marine] = await Promise.all([
+    // Fetch weather, marine, and calendar events in parallel
+    const gcalConfig = {
+      apiKey: process.env.GOOGLE_CALENDAR_API_KEY ?? "",
+      sportsCalendarId: process.env.GCAL_SPORTS_ID ?? "",
+      communityCalendarId: process.env.GCAL_COMMUNITY_ID ?? "",
+    };
+
+    const [weather, marine, events] = await Promise.all([
       fetchHomepageWeather(),
       fetchHomepageMarine(),
+      gcalConfig.apiKey
+        ? fetchGoogleCalendarEvents(gcalConfig, dateStr(0), dateStr(3)).catch(() => [] as CalendarEvent[])
+        : Promise.resolve([] as CalendarEvent[]),
     ]);
 
-    const script = generatePodcastScript(weather, marine);
+    const script = generatePodcastScript(weather, marine, events);
 
-    // Try VM TTS server first (Gemini TTS — free, high quality)
+    // Try VM TTS server (Gemini TTS — free, high quality)
     if (TTS_SECRET) {
       try {
         const ttsRes = await fetch(TTS_ENDPOINT, {
@@ -30,9 +48,9 @@ export async function POST() {
           },
           body: JSON.stringify({
             script,
-            voice: "warm, friendly local radio host, clear and upbeat, casual and conversational, slight warmth",
+            voice: "warm, friendly local radio host, clear and upbeat, casual and conversational",
           }),
-          signal: AbortSignal.timeout(90000), // 90s timeout — TTS can take a moment
+          signal: AbortSignal.timeout(90000),
         });
 
         if (ttsRes.ok) {
@@ -44,18 +62,19 @@ export async function POST() {
             generatedAt: new Date().toISOString(),
             isMock: false,
             engine: "gemini-tts",
+            hasEvents: events.length > 0,
           });
         }
       } catch (ttsErr) {
-        console.warn("VM TTS failed, falling back to mock:", ttsErr);
+        console.warn("VM TTS failed, falling back:", ttsErr);
       }
     }
 
-    // ElevenLabs fallback (if key set)
+    // ElevenLabs fallback
     const elKey = process.env.ELEVENLABS_API_KEY;
     if (elKey) {
       try {
-        const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+        const voiceId = "21m00Tcm4TlvDq8ikWAM";
         const elRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: "POST",
           headers: {
@@ -78,6 +97,7 @@ export async function POST() {
             generatedAt: new Date().toISOString(),
             isMock: false,
             engine: "elevenlabs",
+            hasEvents: events.length > 0,
           });
         }
       } catch {}
@@ -90,6 +110,7 @@ export async function POST() {
       generatedAt: new Date().toISOString(),
       isMock: true,
       engine: "mock",
+      hasEvents: events.length > 0,
     });
 
   } catch (err) {

@@ -1,93 +1,242 @@
 import type { HomepageWeather } from "./weather";
 import type { HomepageMarine } from "./marine";
+import type { CalendarEvent } from "@/types/calendar";
 
-const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DAYS   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-function toF(c: number) { return Math.round(c * 9/5 + 32); }
+// ── Unit converters ───────────────────────────────────────────────────────────
+function toF(c: number)   { return Math.round(c * 9/5 + 32); }
 function toMph(kts: number) { return Math.round(kts * 1.151); }
-function toFt(m: number) { return Math.round(m * 3.281 * 10) / 10; }
+function toFt(m: number)  { return (m * 3.281).toFixed(1); }
+// Convert "HH:MM" 24h to "h:MM AM/PM"
+function formatTime12(time24: string): string {
+  const [hStr, mStr] = time24.split(":");
+  const h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${mStr} ${ampm}`;
+}
 
-function seaDescription(waveM: number): string {
-  const ft = toFt(waveM);
-  if (ft < 1) return "glassy calm";
-  if (ft < 2) return "light chop";
-  if (ft < 4) return "moderate";
-  if (ft < 6) return "rough";
-  return "very rough";
+// ── Descriptions ─────────────────────────────────────────────────────────────
+function seaCondition(waveM: number, gustKts: number): { label: string; glass: boolean; fishing: string } {
+  const gustMph = toMph(gustKts);
+  const waveFt  = parseFloat(toFt(waveM));
+  const glass   = waveFt < 0.5 && gustMph < 8;
+  const calm    = waveFt < 1.0 && gustMph < 12;
+  const moderate = waveFt < 2.5;
+
+  let label: string;
+  if (glass)        label = "glassy calm — absolutely flat out there";
+  else if (calm)    label = "calm with light chop";
+  else if (moderate) label = "moderate conditions";
+  else              label = "rough — use caution on the water";
+
+  let fishing: string;
+  if (glass) {
+    fishing = "Fishing conditions are exceptional today. Glass water means you can see structure, spot fish, and work lures with precision. If you've been waiting for the right day — this is it. Get out early before the afternoon breeze picks up.";
+  } else if (calm) {
+    fishing = "Fishing conditions are good today. Light winds and calm water make for comfortable trolling and surface fishing. Dorado, roosterfish, and sierra should all be active near structure and the channel edges.";
+  } else if (moderate) {
+    fishing = "Fishing is workable today with moderate conditions. Stick to the protected areas of the bay, work the shallow flats on the calm side, and keep an eye on the afternoon gusts.";
+  } else {
+    fishing = "Conditions are challenging today for fishing. If you do go out, stay inside the bay, keep it short, and prioritize safety. The fish will still be there when the wind lays down.";
+  }
+
+  return { label, glass, fishing };
 }
 
 function windDescription(mph: number): string {
-  if (mph < 5) return "calm";
-  if (mph < 10) return "light";
-  if (mph < 15) return "gentle";
-  if (mph < 20) return "moderate";
-  if (mph < 25) return "fresh";
-  return "strong";
+  if (mph < 5)  return "virtually no wind";
+  if (mph < 10) return "light breeze";
+  if (mph < 15) return "gentle breeze";
+  if (mph < 20) return "moderate breeze";
+  if (mph < 25) return "fresh winds";
+  if (mph < 35) return "strong winds";
+  return "very strong winds — use caution";
 }
 
+function forecastDayLabel(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  const today = new Date();
+  const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  return DAYS[d.getDay()];
+}
+
+// ── Event formatter (Google Calendar events, injected when available) ─────────
+function formatEvents(events: CalendarEvent[]): string {
+  if (!events || events.length === 0) return "";
+
+  const today = new Date();
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() + 4); // today + 3 days
+
+  const relevant = events.filter(e => {
+    const d = new Date(e.date + "T12:00:00");
+    return d >= today && d <= cutoff;
+  });
+
+  if (relevant.length === 0) return "";
+
+  const grouped: Record<string, CalendarEvent[]> = {};
+  for (const ev of relevant) {
+    const label = forecastDayLabel(ev.date);
+    if (!grouped[label]) grouped[label] = [];
+    grouped[label].push(ev);
+  }
+
+  const lines: string[] = ["And now let's check the community calendar."];
+  for (const [dayLabel, evs] of Object.entries(grouped)) {
+    lines.push(`${dayLabel}:`);
+    for (const ev of evs) {
+      const time = ev.startTime ? ` at ${formatTime12(ev.startTime)}` : "";
+      const loc  = ev.location ? ` at ${ev.location}` : "";
+      lines.push(`  ${ev.title}${time}${loc}.`);
+    }
+  }
+  lines.push("Check the Posada Underground events page for full details.");
+  return lines.join(" ");
+}
+
+// ── Main script generator ─────────────────────────────────────────────────────
 export function generatePodcastScript(
   weather: HomepageWeather,
-  marine: HomepageMarine
+  marine: HomepageMarine,
+  events?: CalendarEvent[]
 ): string {
-  const now = new Date();
-  const day = DAYS[now.getDay()];
+  const now   = new Date();
+  const day   = DAYS[now.getDay()];
   const month = MONTHS[now.getMonth()];
-  const date = now.getDate();
+  const date  = now.getDate();
 
   const c = weather.current;
-  const tempF = toF(c.tempC);
-  const feelsF = toF(c.feelsLikeC);
-  const windMph = toMph(c.windSpeedKts);
-  const gustMph = toMph(c.windGustsKts);
+  const windMph  = toMph(c.windSpeedKts);
+  const gustMph  = toMph(c.windGustsKts);
   const windWord = windDescription(windMph);
 
-  const snap = marine.snapshot;
-  const wavesFt = toFt(snap.conditions.waveHeightM);
-  const swellFt = toFt(snap.conditions.swellHeightM);
-  const seaWord = seaDescription(snap.conditions.waveHeightM);
-  const moon = snap.moon;
+  // Today's forecast
+  const today    = weather.forecast?.days?.[0];
+  const highF    = today ? toF(today.highC) : null;
+  const lowF     = today ? toF(today.lowC)  : null;
+  const highC    = today ? Math.round(today.highC) : null;
+  const lowC     = today ? Math.round(today.lowC)  : null;
 
-  // Today's forecast high/low
-  const today = weather.forecast?.days?.[0];
-  const highF = today ? toF(today.highC) : null;
-  const lowF  = today ? toF(today.lowC)  : null;
+  // 3-day forecast (days 1-3)
+  const nextDays = weather.forecast?.days?.slice(1, 4) ?? [];
 
-  // Next tide event
-  const nextTide = snap.tides?.events?.[0];
-  const tideStr = nextTide
-    ? `${nextTide.type === "high" ? "high" : "low"} tide at ${nextTide.time}, ${toFt(nextTide.heightM)} feet`
-    : null;
+  // Marine
+  const snap  = marine.snapshot;
+  const mc    = snap.conditions;
+  const tides = snap.tides?.events ?? [];
+  const moon  = snap.moon;
 
-  // UV advisory
-  const uvNote = c.uvIndex >= 8
-    ? `UV index is very high at ${c.uvIndex} — don't forget your sunscreen and a hat.`
-    : c.uvIndex >= 6
-    ? `UV index is high today at ${c.uvIndex}, so sun protection is a must.`
+  // Sea condition assessment
+  const seaInfo = seaCondition(mc.waveHeightM, c.windGustsKts);
+
+  // Tides — find all high and low events today
+  const highTides = tides.filter(t => t.type === "high");
+  const lowTides  = tides.filter(t => t.type === "low");
+
+  function tideStr(events: typeof tides) {
+    return events.map(t => `${t.time} (${toFt(t.heightM)} feet)`).join(" and ");
+  }
+
+  // Gust advisory
+  const gustNote = gustMph > windMph + 8
+    ? ` with gusts up to ${gustMph} miles per hour`
+    : "";
+  const gustAdvisory = gustMph >= 20
+    ? ` Keep an eye on those afternoon gusts — ${gustMph} miles per hour is enough to kick up a chop quickly.`
     : "";
 
-  // Gust note
-  const gustNote = gustMph > windMph + 5
-    ? `, with gusts up to ${gustMph} miles per hour`
+  // Build the script ───────────────────────────────────────────────────────────
+  const parts: string[] = [];
+
+  // Intro
+  parts.push(
+    `Good morning Posada! It's ${day}, ${month} ${date}th. ` +
+    `Welcome to your Posada Underground daily briefing — everything you need to know before you head out.`
+  );
+
+  // Current conditions + today's high/low
+  const tempLine = highF && lowF
+    ? `Today's high will reach ${highF} degrees Fahrenheit — that's ${highC} Celsius — with an overnight low of ${lowF} Fahrenheit, ${lowC} Celsius.`
     : "";
 
-  const lines: string[] = [
-    `Good morning, Posada! It's ${day}, ${month} ${date}th — and another day in paradise on Bahia Concepcion.`,
-    "",
-    `Right now at Posada Concepcion, we're sitting at ${tempF} degrees Fahrenheit — feels like ${feelsF}. ${c.isDay ? "Skies are" : "Overnight conditions"} ${(c.weatherCode <= 3 ? "clear to partly cloudy" : "mostly cloudy")}.`,
-    "",
-    `Winds are ${windWord} out of the ${c.windDirectionLabel} at ${windMph} miles per hour${gustNote}. ${uvNote}`,
-    "",
-    `Out on the water, the sea is ${seaWord} with ${wavesFt}-foot waves and ${swellFt}-foot swells rolling in from the ${snap.conditions.swellDirectionLabel} on a ${snap.conditions.swellPeriodS}-second period.${snap.conditions.seaTempC ? ` Sea temperature is ${toF(snap.conditions.seaTempC)}°F.` : ""}`,
-    "",
-    highF && lowF ? `Today's forecast: highs near ${highF}, overnight lows around ${lowF}. ${today?.precipMm && today.precipMm > 1 ? "There's a chance of showers later." : "Nice and dry."}` : "",
-    "",
-    tideStr ? `Tides: next ${tideStr}. Plan your beach time accordingly.` : "",
-    "",
-    `Tonight's sky: ${moon.name} moon at ${moon.illuminationPct}% illumination. ${moon.illuminationPct > 80 ? "Great night for stargazing — or spotting manta rays." : "Dark skies tonight — perfect for the Milky Way."}`,
-    "",
-    `That's your Posada Underground morning briefing. Stay salty, stay safe, and we'll see you on the water. Hasta luego!`,
-  ];
+  parts.push(
+    `Right now on Bahia Concepcion, we've got ${windWord} out of the ${c.windDirectionLabel} ` +
+    `at ${windMph} miles per hour${gustNote}. ${tempLine}${gustAdvisory}`
+  );
 
-  return lines.filter(l => l !== null && l !== undefined).join("\n").trim();
+  // Tides
+  if (highTides.length > 0 || lowTides.length > 0) {
+    const tideLines: string[] = [];
+    if (highTides.length > 0) tideLines.push(`High tide today at ${tideStr(highTides)}`);
+    if (lowTides.length  > 0) tideLines.push(`low tide at ${tideStr(lowTides)}`);
+    parts.push(`On the tides: ${tideLines.join(", ")}. Plan your beach access and fishing around those windows.`);
+  }
+
+  // Sea conditions + fishing — SELL IT if glass
+  if (seaInfo.glass) {
+    parts.push(
+      `Now here's the headline for today: the bay is GLASS. ` +
+      `We're talking ${toFt(mc.waveHeightM)}-foot waves — basically nothing — ` +
+      `with ${toFt(mc.swellHeightM)}-foot swells rolling in on a ${mc.swellPeriodS}-second period from the ${mc.swellDirectionLabel}. ` +
+      `If you've been waiting for a perfect day on the water, today is it. ` +
+      `Conditions don't get better than this on the Sea of Cortez.`
+    );
+  } else {
+    parts.push(
+      `Out on the water, the bay is ${seaInfo.label}. ` +
+      `Waves are running ${toFt(mc.waveHeightM)} feet with ${toFt(mc.swellHeightM)}-foot swells ` +
+      `out of the ${mc.swellDirectionLabel} on a ${mc.swellPeriodS}-second period.`
+    );
+  }
+
+  // Fishing outlook
+  parts.push(seaInfo.fishing);
+
+  // Moon
+  parts.push(
+    `Tonight: ${moon.name} moon at ${moon.illuminationPct}% illumination. ` +
+    (moon.illuminationPct > 75
+      ? "Bright night — great for a beach fire and stargazing, though the fish may be a little slower on the surface."
+      : moon.illuminationPct < 30
+      ? "Dark skies tonight — ideal for seeing the Milky Way over the bay, and the bioluminescence should be active."
+      : "A comfortable night out on the beach or the water.")
+  );
+
+  // 3-day forecast
+  if (nextDays.length > 0) {
+    parts.push(`Now let's look ahead at the next three days.`);
+    for (const d of nextDays) {
+      const label  = forecastDayLabel(d.date);
+      const dHighF = toF(d.highC);
+      const dLowF  = toF(d.lowC);
+      const dHighC = Math.round(d.highC);
+      const dLowC  = Math.round(d.lowC);
+      const dWind  = toMph(d.windMaxKts);
+      const precip = d.precipMm > 2 ? " Some rain expected." : "";
+      parts.push(
+        `${label}: ${d.weatherLabel}. High ${dHighF}°F (${dHighC}°C), low ${dLowF}°F (${dLowC}°C). ` +
+        `Wind up to ${dWind} miles per hour out of the ${d.windDominantDir}.${precip}`
+      );
+    }
+  }
+
+  // Community events (if provided)
+  if (events && events.length > 0) {
+    const evSection = formatEvents(events);
+    if (evSection) parts.push(evSection);
+  }
+
+  // Sign-off
+  parts.push(
+    `That's your Posada Underground morning briefing for ${day}. ` +
+    `Stay safe, stay salty, and we'll see you on the water. Hasta luego!`
+  );
+
+  return parts.join("\n\n");
 }
