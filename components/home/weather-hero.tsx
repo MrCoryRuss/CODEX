@@ -31,8 +31,8 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
         <div className="hero-left">
           <span className="weather-icon" aria-hidden="true">{icon}</span>
           <div>
-            <div className="temp-primary">{tempF}°<span className="temp-f">F</span></div>
-            <div className="temp-secondary">{c.tempC}°C · Feels {feelsF}°F</div>
+            <div className="temp-primary">{tempF}°<span className="temp-f">F</span> <span className="temp-c">/ {c.tempC}°C</span></div>
+            <div className="temp-secondary">Feels {feelsF}°F / {c.feelsLikeC}°C</div>
             <div className="condition">{label}</div>
           </div>
         </div>
@@ -44,8 +44,8 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
         <div className="metric">
           <span className="m-icon">💨</span>
           <div>
-            <span className="m-val">{windMph} <span className="m-unit">mph</span></span>
-            {gustMph > windMph + 4 && <span className="m-gust">G {gustMph}</span>}
+            <span className="m-val">{windMph} <span className="m-unit">mph</span> <span className="m-alt">/ {c.windSpeedKts} kts</span></span>
+            {gustMph > windMph + 4 && <span className="m-gust">G {gustMph} mph</span>}
             <span className="m-label">{c.windDirectionLabel}</span>
           </div>
         </div>
@@ -111,6 +111,8 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
           color: var(--color-text);
         }
         .temp-f { font-size: 28px; font-weight: 400; color: var(--color-text-secondary); }
+        .temp-c { font-size: 22px; font-weight: 400; color: var(--color-text-muted); }
+        .m-alt { font-size: 12px; font-weight: 400; color: var(--color-text-muted); margin-left: 2px; }
         .temp-secondary { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; }
         .condition { font-size: 16px; font-weight: 600; color: var(--color-text); margin-top: 2px; }
         .detail-link {
