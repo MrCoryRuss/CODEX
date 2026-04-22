@@ -88,7 +88,7 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
           padding: var(--sp-5);
           margin-bottom: var(--sp-4);
           box-shadow: var(--shadow-card);
-          border: 1px solid var(--color-border-light);
+          border: 1px solid var(--color-border);
         }
         .hero-top {
           display: flex;
@@ -103,10 +103,10 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
         }
         .weather-icon { font-size: 52px; line-height: 1; }
         .temp-primary {
-          font-family: var(--font-data);
+          font-family: var(--font-display);
           font-size: 52px;
           font-weight: 700;
-          letter-spacing: -0.03em;
+          letter-spacing: -0.02em;
           line-height: 1;
           color: var(--color-text);
         }
@@ -114,7 +114,7 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
         .temp-c { font-size: 22px; font-weight: 400; color: var(--color-text-muted); }
         .m-alt { font-size: 12px; font-weight: 400; color: var(--color-text-muted); margin-left: 2px; }
         .temp-secondary { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; }
-        .condition { font-size: 16px; font-weight: 600; color: var(--color-text); margin-top: 2px; }
+        .condition { font-size: 16px; font-weight: 600; color: var(--color-text-secondary); margin-top: 2px; }
         .detail-link {
           font-size: 14px;
           font-weight: 600;
@@ -170,8 +170,8 @@ export default function WeatherHero({ conditions: c, isLive }: Props) {
           border-top: 1px solid var(--color-border-light);
         }
         .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-        .dot-live { background: var(--color-success); animation: pulse 2s ease-in-out infinite; }
-        .dot-cached { background: var(--color-sun); }
+        .dot-live { background: var(--color-sun); animation: pulse 2s ease-in-out infinite; }
+        .dot-cached { background: var(--color-text-muted); }
         .status-text { font-size: 12px; color: var(--color-text-muted); }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
         @media (min-width: 640px) {

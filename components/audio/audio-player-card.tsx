@@ -134,21 +134,21 @@ export default function AudioPlayerCard({ episode }: Props) {
         .episode-date {
           font-size: 12px;
           font-weight: 600;
-          color: var(--color-desert);
+          color: var(--color-text-muted);
           text-transform: uppercase;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.06em;
         }
 
         .episode-title {
           font-size: 18px;
-          font-weight: 600;
-          color: var(--color-night);
+          font-weight: 700;
+          color: var(--color-text);
           margin: 0;
         }
 
         .episode-summary {
           font-size: 14px;
-          color: var(--color-desert);
+          color: var(--color-text-secondary);
           line-height: 1.5;
           margin: 0;
         }
@@ -163,8 +163,8 @@ export default function AudioPlayerCard({ episode }: Props) {
           width: 56px;
           height: 56px;
           border-radius: 50%;
-          background: var(--color-sea);
-          color: var(--color-white);
+          background: var(--color-primary);
+          color: #fff;
           border: none;
           font-size: 24px;
           cursor: pointer;
@@ -176,7 +176,7 @@ export default function AudioPlayerCard({ episode }: Props) {
         }
 
         .play-button:hover {
-          background: #1560a0;
+          background: #A8481F;
           transform: scale(1.05);
         }
 
@@ -201,7 +201,7 @@ export default function AudioPlayerCard({ episode }: Props) {
           border-radius: 3px;
           -webkit-appearance: none;
           appearance: none;
-          background: var(--color-sand);
+          background: var(--color-surface-alt);
           outline: none;
           cursor: pointer;
         }
@@ -212,27 +212,27 @@ export default function AudioPlayerCard({ episode }: Props) {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: var(--color-sea);
+          background: var(--color-primary);
           cursor: pointer;
           transition: background 0.2s ease;
         }
 
         .progress-bar::-webkit-slider-thumb:hover {
-          background: #1560a0;
+          background: #A8481F;
         }
 
         .progress-bar::-moz-range-thumb {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: var(--color-sea);
+          background: var(--color-primary);
           border: none;
           cursor: pointer;
           transition: background 0.2s ease;
         }
 
         .progress-bar::-moz-range-thumb:hover {
-          background: #1560a0;
+          background: #A8481F;
         }
 
         .time-display {
@@ -242,15 +242,15 @@ export default function AudioPlayerCard({ episode }: Props) {
           font-family: var(--font-data);
           font-size: 12px;
           font-weight: 500;
-          color: var(--color-desert);
+          color: var(--color-text-muted);
         }
 
         .time-current {
-          color: var(--color-sea);
+          color: var(--color-primary);
         }
 
         .player-footer {
-          border-top: 1px solid var(--color-sand);
+          border-top: 1px solid var(--color-border-light);
           padding-top: var(--sp-3);
         }
 
@@ -265,12 +265,12 @@ export default function AudioPlayerCard({ episode }: Props) {
           font-family: var(--font-body);
           font-size: 14px;
           font-weight: 600;
-          color: var(--color-sea);
+          color: var(--color-primary);
           transition: color 0.2s ease;
         }
 
         .transcript-toggle:hover {
-          color: #1560a0;
+          color: #A8481F;
         }
 
         .toggle-icon {
@@ -280,20 +280,21 @@ export default function AudioPlayerCard({ episode }: Props) {
 
         .toggle-text {
           text-transform: uppercase;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.05em;
         }
 
         .transcript-section {
           padding: var(--sp-3) var(--sp-4);
-          background: var(--color-sand);
+          background: var(--color-surface-alt);
           border-radius: var(--radius-md);
           margin-top: var(--sp-3);
+          border: 1px solid var(--color-border-light);
         }
 
         .transcript-text {
           font-size: 14px;
           line-height: 1.7;
-          color: var(--color-night);
+          color: var(--color-text);
           margin: 0;
         }
       `}</style>
