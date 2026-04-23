@@ -15,6 +15,7 @@ import type {
   MarineSnapshot,
   TideEvent,
   TideSchedule,
+  TideForecastDay,
   MoonPhase,
 } from "@/types/weather";
 
@@ -121,26 +122,140 @@ export async function fetchMarineConditions(
 }
 
 // ── Tides ───────────────────────────────────────────────────
-// Open-Meteo doesn't provide tide data. Planned source: WorldTides API.
-// Free tier: 200 calls/month. Strategy: fetch once daily and cache.
-// See docs/03-data-sources.md for details.
+// Source: Open-Meteo Marine API — sea_level_height_msl (hourly)
+// We fetch 7 days of hourly sea-level, then find local extremes (turning
+// points) to produce high/low tide events. Free, no API key required.
+// Cache: 6 hours (tides change slowly; hourly precision is sufficient).
 
-// WorldTides API shape (for future integration):
-//   GET https://www.worldtides.info/api/v3
-//     ?extremes&lat=26.6&lon=-111.8&key=API_KEY&days=1
-//   Returns: { extremes: [{ dt: unix, date: string, type: "High"|"Low", height: number }] }
+const MARINE_SEA_LEVEL_URL = "https://marine-api.open-meteo.com/v1/marine";
+
+interface OmSeaLevelResponse {
+  hourly: {
+    time: string[];
+    sea_level_height_msl: (number | null)[];
+  };
+}
+
+function seaLevelUrl(loc: LocationConfig): string {
+  return (
+    `${MARINE_SEA_LEVEL_URL}?latitude=${loc.latitude}&longitude=${loc.longitude}` +
+    `&timezone=${encodeURIComponent(loc.timezone)}` +
+    `&hourly=sea_level_height_msl&forecast_days=7`
+  );
+}
+
+/** Convert metres to feet, rounded to 1 decimal. */
+function mToFt(m: number): number {
+  return Math.round(m * 32.8084) / 10;
+}
 
 /**
- * Fetch today's tide schedule.
- * Returns mock data until WorldTides API is integrated.
+ * Extract tide high/low extremes from an array of hourly sea-level values.
+ * A turning point is a local min/max with at least 2 cm amplitude vs neighbours.
+ */
+function extractExtremes(
+  times: string[],
+  heights: (number | null)[]
+): TideEvent[] {
+  const events: TideEvent[] = [];
+  let lastType: "high" | "low" | null = null;
+
+  for (let i = 1; i < times.length - 1; i++) {
+    const h0 = heights[i - 1];
+    const h1 = heights[i];
+    const h2 = heights[i + 1];
+    if (h0 === null || h1 === null || h2 === null) continue;
+
+    const isHigh = h1 >= h0 && h1 >= h2 && h1 - Math.min(h0, h2) > 0.02;
+    const isLow = h1 <= h0 && h1 <= h2 && Math.max(h0, h2) - h1 > 0.02;
+
+    if (!isHigh && !isLow) continue;
+    const type: "high" | "low" = isHigh ? "high" : "low";
+
+    // Skip flat-top duplicates (same type back-to-back at same height)
+    if (events.length > 0) {
+      const prev = events[events.length - 1];
+      if (prev.type === type && prev.heightM === Math.round(h1 * 100) / 100) continue;
+    }
+
+    // Also suppress if same type as last emitted (consecutive same-direction)
+    if (type === lastType) continue;
+
+    // Format time: strip leading zero, keep AM/PM
+    const [datePart, timePart] = times[i].split("T");
+    const [hh, mm] = timePart.split(":");
+    const hour24 = parseInt(hh, 10);
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    const ampm = hour24 < 12 ? "AM" : "PM";
+    const timeStr = `${hour12}:${mm} ${ampm}`;
+
+    events.push({
+      type,
+      time: timeStr,
+      timeIso: `${times[i]}:00`,
+      heightM: Math.round(h1 * 100) / 100,
+      heightFt: mToFt(h1),
+    });
+    lastType = type;
+  }
+
+  return events;
+}
+
+/**
+ * Fetch tide schedule for today + multi-day forecast.
+ * Uses Open-Meteo Marine sea_level_height_msl — free, no key required.
  */
 export async function fetchTideSchedule(
-  _loc: LocationConfig = POSADA
+  loc: LocationConfig = POSADA
 ): Promise<TideSchedule> {
-  // TODO: Wire up WorldTides API
-  // const url = `https://www.worldtides.info/api/v3?extremes&lat=${loc.latitude}&lon=${loc.longitude}&key=${WORLDTIDES_KEY}&days=1`;
-  console.info("[marine] fetchTideSchedule: using mock data (WorldTides not yet integrated)");
-  return MOCK_TIDE_SCHEDULE;
+  try {
+    const raw = await fetchJson<OmSeaLevelResponse>(seaLevelUrl(loc));
+    const { time: times, sea_level_height_msl: heights } = raw.hourly;
+
+    // Build all extremes across the full 7-day window
+    const allEvents = extractExtremes(times, heights);
+
+    // Today's date string in the location timezone
+    const todayStr = new Date()
+      .toLocaleDateString("en-CA", { timeZone: loc.timezone }); // YYYY-MM-DD
+
+    // Today's events
+    const todayEvents = allEvents.filter(
+      (e) => e.timeIso.startsWith(todayStr)
+    );
+
+    // Build multi-day forecast (next 6 days after today)
+    const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const forecastDays: TideForecastDay[] = [];
+    const seenDates = new Set<string>();
+
+    for (const e of allEvents) {
+      const d = e.timeIso.slice(0, 10);
+      if (d === todayStr) continue;
+      if (!seenDates.has(d)) {
+        const dt = new Date(d + "T12:00:00");
+        forecastDays.push({
+          date: d,
+          dayLabel: DAY_NAMES[dt.getDay()],
+          events: [],
+        });
+        seenDates.add(d);
+      }
+      forecastDays.find((fd) => fd.date === d)!.events.push(e);
+    }
+
+    return {
+      date: todayStr,
+      fetchedAt: new Date().toISOString(),
+      events: todayEvents,
+      forecast: forecastDays.slice(0, 6),
+      isLive: true,
+    };
+  } catch (err) {
+    console.error("[marine] fetchTideSchedule failed, using mock:", err);
+    return MOCK_TIDE_SCHEDULE;
+  }
 }
 
 // ── Moon phase ──────────────────────────────────────────────
@@ -259,11 +374,11 @@ export const MOCK_MARINE_CONDITIONS: MarineConditions = {
 };
 
 export const MOCK_TIDE_SCHEDULE: TideSchedule = {
-  date: "2026-03-27",
-  fetchedAt: "2026-03-27T06:00:00-07:00",
+  date: new Date().toLocaleDateString("en-CA", { timeZone: "America/Mazatlan" }),
+  fetchedAt: new Date().toISOString(),
+  isLive: false,
   events: [
-    { type: "low",  time: "9:18 AM",  timeIso: "2026-03-27T09:18:00-07:00", heightM: 0.2 },
-    { type: "high", time: "3:42 PM",  timeIso: "2026-03-27T15:42:00-07:00", heightM: 1.1 },
-    { type: "low",  time: "9:55 PM",  timeIso: "2026-03-27T21:55:00-07:00", heightM: 0.3 },
+    { type: "low",  time: "10:00 AM", timeIso: "", heightM: -0.38, heightFt: -1.2 },
+    { type: "high", time: "8:00 PM",  timeIso: "", heightM:  0.58, heightFt:  1.9 },
   ] satisfies TideEvent[],
 };

@@ -91,12 +91,21 @@ export interface TideEvent {
   time: string;
   timeIso: string;
   heightM: number;
+  heightFt?: number;
+}
+
+export interface TideForecastDay {
+  date: string;
+  dayLabel: string;
+  events: TideEvent[];
 }
 
 export interface TideSchedule {
   date: string;
   fetchedAt: string;
   events: TideEvent[];
+  forecast?: TideForecastDay[];
+  isLive?: boolean;
 }
 
 export interface MoonPhase {
